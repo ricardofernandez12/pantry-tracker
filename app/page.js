@@ -76,6 +76,7 @@ export default function Home() {
   const [itemName, setItemName] = useState('');
   const [loading, setLoading] = useState(false);
   const [feedback, setFeedback] = useState({ open: false, message: '' });
+  const [recipe, setRecipe] = useState('');
 
   const updateInventory = async () => {
     setLoading(true);
@@ -127,6 +128,21 @@ export default function Home() {
     await updateInventory();
   };
 
+  const getRecipe = async () => {
+    try {
+      const response = await fetch('/api/getRecipe', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ pantryItems: inventory.map(item => item.name) }),
+      });
+
+      const data = await response.json();
+      setRecipe(data.recipe);
+    } catch (error) {
+      console.error('Error fetching recipe:', error);
+    }
+  };
+
   const handleOpen = () => setOpen(true);
   const handleClose = () => setOpen(false);
 
@@ -141,9 +157,10 @@ export default function Home() {
       flexDirection={'column'}
       alignItems={'center'}
       gap={2}
-      bgcolor="#121212"
+      bgcolor="#101010"
       padding={4}
     >
+      {/* Modal for adding items */}
       <Modal
         open={open}
         onClose={handleClose}
@@ -186,6 +203,8 @@ export default function Home() {
           </Box>
         </Fade>
       </Modal>
+  
+      {/* Add New Item button */}
       <Zoom in={true}>
         <GradientButton
           onClick={handleOpen}
@@ -195,6 +214,8 @@ export default function Home() {
           Add New Item
         </GradientButton>
       </Zoom>
+  
+      {/* Inventory List */}
       <Box borderRadius="12px" width="100%" maxWidth="900px" p={2} bgcolor="rgba(30, 30, 30, 0.8)" boxShadow="0 10px 30px rgba(0,0,0,0.5)">
         <Box
           width="100%"
@@ -210,6 +231,7 @@ export default function Home() {
             Inventory Items
           </Typography>
         </Box>
+  
         {loading ? (
           <Box display="flex" justifyContent="center" alignItems="center" height="200px">
             <CircularProgress color="primary" />
@@ -250,6 +272,8 @@ export default function Home() {
           </Grid>
         )}
       </Box>
+  
+      {/* Snackbar for feedback */}
       <Snackbar
         open={feedback.open}
         autoHideDuration={3000}
@@ -257,6 +281,25 @@ export default function Home() {
         message={feedback.message}
         anchorOrigin={{ vertical: 'bottom', horizontal: 'center' }}
       />
+  
+      {/* Suggest a Recipe Button and Recipe Display */}
+      <GradientButton
+        onClick={getRecipe}
+        sx={{ fontSize: '18px', padding: '10px 20px', marginTop: '20px' }}
+      >
+        Suggest a Recipe
+      </GradientButton>
+  
+      {recipe && (
+        <Box mt={4} p={3} borderRadius="12px" bgcolor="#1e1e1e" boxShadow="0 4px 15px rgba(0,0,0,0.5)">
+          <Typography variant="h6" color="text.primary">
+            Suggested Recipe:
+          </Typography>
+          <Typography variant="body1" color="text.secondary" mt={2}>
+            {recipe}
+          </Typography>
+        </Box>
+      )}
     </Box>
   );
-}
+} 
